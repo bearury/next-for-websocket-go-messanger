@@ -22,6 +22,24 @@ export type WsMessage<TPayload = unknown> = {
 export type OutgoingChatPayload = {
     content: string
     to?: string
+    chat_id?: string
+}
+
+export type User = {
+    id: string
+    username: string
+}
+
+export type CreateChatRequest = {
+    name: string
+    type: 'chat'
+    userIds: string[]
+}
+
+export type CreateChatResponse = {
+    id: string
+    name: string
+    type: string
 }
 
 export type IncomingChatPayload = {

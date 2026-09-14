@@ -3,6 +3,7 @@
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { extractToken, signIn, signUp, AuthError } from "./auth-client";
+import { fetchMe } from "./chat-client";
 import {
   getToken,
   removeToken,
@@ -68,12 +69,29 @@ export function useAuth() {
     router.push("/sign-in");
   }, [router]);
 
+  // Проверяем токен через /api/me: если бэкенд отвечает —
+  // сессия валидна и токен гарантированно лежит в localStorage.
+  const checkSession = useCallback(async () => {
+    const token = getToken();
+    if (!token) return false;
+
+    try {
+      await fetchMe(token);
+      saveToken(token);
+      return true;
+    } catch {
+      removeToken();
+      return false;
+    }
+  }, []);
+
   return {
     isAuthenticated: token !== null,
     token,
     login,
     register,
     logout,
+    checkSession,
     isLoading,
     error,
     clearError: () => setError(null),

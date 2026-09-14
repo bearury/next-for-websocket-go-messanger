@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function MessageInput({
   onSend,
   disabled,
+  focusSignal,
 }: {
   onSend: (content: string) => void;
   disabled?: boolean;
+  focusSignal?: string | null;
 }) {
   const [content, setContent] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [focusSignal]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,6 +39,7 @@ export function MessageInput({
       className="flex items-center gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800"
     >
       <input
+        ref={inputRef}
         type="text"
         value={content}
         onChange={(e) => setContent(e.target.value)}

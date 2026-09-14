@@ -47,11 +47,11 @@ export function useMessenger(token: string | null) {
         }
     }, [token])
 
-    const sendMessage = useCallback((content: string, to?: string) => {
+    const sendMessage = useCallback((content: string, to?: string, chatId?: string) => {
         const client = clientRef.current
         if (!client) return false
 
-        const payload: OutgoingChatPayload = { content, to }
+        const payload: OutgoingChatPayload = { content, to, chat_id: chatId }
         const sent = client.send('message', payload)
 
         if (sent) {

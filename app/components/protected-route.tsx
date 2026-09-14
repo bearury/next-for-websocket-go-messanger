@@ -1,25 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken, subscribeToken } from "@/app/lib/auth-store";
-import { useSyncExternalStore } from "react";
+import { getToken } from "@/app/lib/auth-store";
+import { fetchMe } from "@/app/lib/chat-client";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const token = useSyncExternalStore(
-    subscribeToken,
-    getToken,
-    () => null // server snapshot
-  );
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (token === null) {
+    // Читаем токен напрямую из localStorage, минуя серверный снапшот,
+    // иначе при гидратации видим null и редиректим до чтения токена.
+    const token = getToken();
+    if (!token) {
       router.replace("/sign-in");
+      return;
     }
-  }, [token, router]);
 
-  if (token === null) {
+    let cancelled = false;
+
+    fetchMe(token)
+      .then(() => {
+        if (!cancelled) setIsChecking(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        router.replace("/sign-in");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (isChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-foreground" />
