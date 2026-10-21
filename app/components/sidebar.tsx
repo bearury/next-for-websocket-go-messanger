@@ -1,26 +1,26 @@
 'use client'
 
 import React, { useState } from 'react'
+import type { Chat } from '../lib/types'
 import ChatList from './chat-list'
 import NewChatDialog from './new-chat-dialog'
-import type { CreateChatResponse } from '../lib/types'
 
 type SidebarProps = {
-    token: string
-    onChatCreated: (chat: CreateChatResponse) => void
+    activeChatId: string | null
+    onSelectChat: (chat: Chat) => void
 }
 
-const Sidebar = ({ token, onChatCreated }: SidebarProps) => {
+const Sidebar = ({ activeChatId, onSelectChat }: SidebarProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-    function handleChatCreated(chat: CreateChatResponse) {
+    function handleChatCreated(chat: Chat) {
         setIsDialogOpen(false)
-        onChatCreated(chat)
+        onSelectChat(chat)
     }
 
     return (
-        <div className='border-r border-zinc-200 p-3 dark:border-zinc-800'>
-            <div className='mb-3 flex items-center justify-between'>
+        <div className='flex w-64 shrink-0 flex-col border-r border-zinc-200 p-3 dark:border-zinc-800'>
+            <div className='mb-3 flex items-center justify-between gap-2'>
                 <button>Menu</button>
                 <button
                     type='button'
@@ -32,11 +32,13 @@ const Sidebar = ({ token, onChatCreated }: SidebarProps) => {
                     +
                 </button>
             </div>
-            <ChatList />
+
+            <div className='flex-1 overflow-y-auto'>
+                <ChatList activeChatId={activeChatId} onSelect={onSelectChat} />
+            </div>
 
             {isDialogOpen && (
                 <NewChatDialog
-                    token={token}
                     onClose={() => setIsDialogOpen(false)}
                     onChatCreated={handleChatCreated}
                 />

@@ -5,17 +5,15 @@ import { ConnectionStatus } from '@/app/components/connection-status'
 import { MessageInput } from '@/app/components/message-input'
 import { MessageList } from '@/app/components/message-list'
 import { ProtectedRoute } from '@/app/components/protected-route'
-import { getToken } from '@/app/lib/auth-store'
 import { useAuth } from '@/app/lib/use-auth'
-import { useMessenger } from '@/app/lib/use-messenger'
-import type { CreateChatResponse } from '@/app/lib/types'
+import { useMessages } from '@/app/lib/use-messages'
+import type { Chat } from '@/app/lib/types'
 import Sidebar from '../components/sidebar'
 
 function MessengerContent() {
-    const token = getToken()
     const { logout } = useAuth()
-    const { messages, status, sendMessage, reconnect } = useMessenger(token)
-    const [activeChat, setActiveChat] = useState<CreateChatResponse | null>(null)
+    const [activeChat, setActiveChat] = useState<Chat | null>(null)
+    const { messages, status, sendMessage, reconnect } = useMessages(activeChat?.id ?? null)
 
     const isConnected = status === 'open'
 
@@ -36,16 +34,18 @@ function MessengerContent() {
                 </button>
             </header>
 
-            <div className='flex flex-1 flex-row gap-3 overflow-y-auto'>
-                {token && <Sidebar token={token} onChatCreated={setActiveChat} />}
-                <MessageList messages={messages} />
-            </div>
+            <div className='flex flex-1 overflow-hidden'>
+                <Sidebar activeChatId={activeChat?.id ?? null} onSelectChat={setActiveChat} />
 
-            <MessageInput
-                onSend={(content) => sendMessage(content, undefined, activeChat?.id)}
-                disabled={!isConnected}
-                focusSignal={activeChat?.id ?? null}
-            />
+                <div className='flex min-w-0 flex-1 flex-col'>
+                    <MessageList messages={messages} hasActiveChat={activeChat !== null} />
+                    <MessageInput
+                        sendMessageAction={sendMessage}
+                        disabled={!isConnected || activeChat === null}
+                        focusSignal={activeChat?.id ?? null}
+                    />
+                </div>
+            </div>
         </div>
     )
 }

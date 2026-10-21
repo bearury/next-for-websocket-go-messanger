@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {useMeQuery} from "@/app/lib/use-me";
+import {User} from "@/app/lib/types";
 
 export function MessageInput({
-  onSend,
+															 sendMessageAction,
   disabled,
   focusSignal,
 }: {
-  onSend: (content: string) => void;
+  sendMessageAction: (user: User, content: string) => void;
   disabled?: boolean;
   focusSignal?: string | null;
 }) {
+	const meQuery = useMeQuery()
   const [content, setContent] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -20,9 +23,11 @@ export function MessageInput({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+		const user = meQuery.data
+
     const trimmed = content.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
+    if (!trimmed || !user || disabled) return;
+		sendMessageAction(user, trimmed);
     setContent("");
   }
 

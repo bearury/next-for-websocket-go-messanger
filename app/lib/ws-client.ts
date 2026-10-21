@@ -1,5 +1,5 @@
 import { WS_BASE_URL } from './config'
-import type { WsConnectionStatus, WsMessage } from './types'
+import type {PayloadWsMessage, WsConnectionStatus, WsMessage} from './types'
 
 type MessageHandler = (message: WsMessage) => void
 type StatusHandler = (status: WsConnectionStatus, error?: Event) => void
@@ -7,14 +7,14 @@ type StatusHandler = (status: WsConnectionStatus, error?: Event) => void
 export class WsClient {
     private socket: WebSocket | null = null
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null
-    private heartbeatTimer: ReturnType<typeof setInterval> | null = null
+    // private heartbeatTimer: ReturnType<typeof setInterval> | null = null
     private readonly messageHandlers = new Set<MessageHandler>()
     private readonly statusHandlers = new Set<StatusHandler>()
     private readonly token: string
     private reconnectAttempts = 0
     private isDisposed = false
 
-    private readonly heartbeatIntervalMs: number
+    // private readonly heartbeatIntervalMs: number
     private readonly reconnectBaseDelayMs: number
     private readonly maxReconnectDelayMs: number
 
@@ -27,7 +27,7 @@ export class WsClient {
         },
     ) {
         this.token = token
-        this.heartbeatIntervalMs = options?.heartbeatIntervalMs ?? 30000
+        // this.heartbeatIntervalMs = options?.heartbeatIntervalMs ?? 30000
         this.reconnectBaseDelayMs = options?.reconnectBaseDelayMs ?? 1000
         this.maxReconnectDelayMs = options?.maxReconnectDelayMs ?? 10000
     }
@@ -55,7 +55,7 @@ export class WsClient {
         this.socket.onopen = () => {
             this.reconnectAttempts = 0
             this.setStatus('open')
-            this.startHeartbeat()
+            // this.startHeartbeat()
         }
 
         this.socket.onmessage = (event) => {
@@ -68,7 +68,7 @@ export class WsClient {
 
         this.socket.onclose = () => {
             this.socket = null
-            this.stopHeartbeat()
+            // this.stopHeartbeat()
             this.setStatus('closed')
             this.scheduleReconnect()
         }
@@ -76,7 +76,7 @@ export class WsClient {
 
     disconnect(): void {
         this.clearReconnectTimer()
-        this.stopHeartbeat()
+        // this.stopHeartbeat()
 
         if (this.socket) {
             this.setStatus('closing')
@@ -96,12 +96,12 @@ export class WsClient {
         this.statusHandlers.clear()
     }
 
-    send<TPayload>(type: string, payload: TPayload): boolean {
+    send(type: string, payload: PayloadWsMessage): boolean {
         if (this.socket?.readyState !== WebSocket.OPEN) {
             return false
         }
 
-        const message: WsMessage<TPayload> = { type, payload }
+        const message: WsMessage = { type, payload }
 
         console.log('🚀:', message)
 
@@ -179,17 +179,17 @@ export class WsClient {
         }
     }
 
-    private startHeartbeat(): void {
-        this.stopHeartbeat()
-        this.heartbeatTimer = setInterval(() => {
-            this.send('ping', { timestamp: Date.now() })
-        }, this.heartbeatIntervalMs)
-    }
+    // private startHeartbeat(): void {
+    //     this.stopHeartbeat()
+    //     this.heartbeatTimer = setInterval(() => {
+    //         this.send('ping', { timestamp: Date.now() })
+    //     }, this.heartbeatIntervalMs)
+    // }
 
-    private stopHeartbeat(): void {
-        if (this.heartbeatTimer) {
-            clearInterval(this.heartbeatTimer)
-            this.heartbeatTimer = null
-        }
-    }
+    // private stopHeartbeat(): void {
+    //     if (this.heartbeatTimer) {
+    //         clearInterval(this.heartbeatTimer)
+    //         this.heartbeatTimer = null
+    //     }
+    // }
 }

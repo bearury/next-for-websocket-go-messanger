@@ -1,5 +1,15 @@
 import { API_BASE_URL } from "./config";
-import type { CreateChatRequest, CreateChatResponse, User } from "./types";
+import type { Chat, CreateChatRequest, User } from "./types";
+
+export class ApiError extends Error {
+    constructor(
+        message: string,
+        public readonly status?: number,
+    ) {
+        super(message);
+        this.name = "ApiError";
+    }
+}
 
 async function authorizedRequest<T>(
     token: string,
@@ -25,7 +35,7 @@ async function authorizedRequest<T>(
                 : typeof data?.error === "string"
                     ? data.error
                     : `HTTP ${response.status}`;
-        throw new Error(message);
+        throw new ApiError(message, response.status);
     }
 
     return data as T;
@@ -33,6 +43,10 @@ async function authorizedRequest<T>(
 
 export function fetchMe(token: string): Promise<User> {
     return authorizedRequest<User>(token, "/api/me");
+}
+
+export function fetchChats(token: string): Promise<Chat[]> {
+    return authorizedRequest<Chat[]>(token, "/api/chats");
 }
 
 export function searchUsers(token: string, search: string): Promise<User[]> {
@@ -44,8 +58,8 @@ export function searchUsers(token: string, search: string): Promise<User[]> {
 export function createChat(
     token: string,
     body: CreateChatRequest,
-): Promise<CreateChatResponse> {
-    return authorizedRequest<CreateChatResponse>(token, "/api/chat", {
+): Promise<Chat> {
+    return authorizedRequest<Chat>(token, "/api/chats", {
         method: "POST",
         body: JSON.stringify(body),
     });

@@ -14,9 +14,23 @@ export type AuthResponse = {
     accessToken?: string
 }
 
-export type WsMessage<TPayload = unknown> = {
-    type: string
-    payload: TPayload
+// export type WsMessage<TPayload = unknown> = {
+//     type: string
+//     payload: TPayload
+// }
+
+export interface PayloadWsMessage {
+	content: string,
+	from: string,
+	to: {
+		id: string
+		type: string
+	}
+}
+
+export type WsMessage = {
+	type: string
+	payload: PayloadWsMessage
 }
 
 export type OutgoingChatPayload = {
@@ -28,18 +42,13 @@ export type OutgoingChatPayload = {
 export type User = {
     id: string
     username: string
+    name?: string
 }
 
 export type CreateChatRequest = {
     name: string
     type: 'chat'
     userIds: string[]
-}
-
-export type CreateChatResponse = {
-    id: string
-    name: string
-    type: string
 }
 
 export type IncomingChatPayload = {
@@ -50,17 +59,18 @@ export type IncomingChatPayload = {
 }
 
 export type ChatMessage = {
-    id: string
-    from: string
-    content: string
-    timestamp: string
-    isOwn: boolean
+		id: string
+		userId: string
+		userName: string
+		chatId: string
+		content: string
+		createdAt: string
 }
 
 export type Chat = {
     id: string
     name: string
-    type: 'user' | 'chain' | 'group'
+    type: 'chat' | 'chain' | 'group'
     isOnline?: boolean
 }
 
